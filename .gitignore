@@ -1,0 +1,6 @@
+# out files
+shared_var
+**/*.o
+
+# user settings
+.vscode
