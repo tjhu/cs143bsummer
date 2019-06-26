@@ -1,10 +1,11 @@
 // Demo a race condition where two threads trying to modify a shared value
 // without synchronization.
 
+#include <atomic>
 #include <iostream>
 #include <thread>
 
-int counter = 0;
+std::atomic<int> counter;
 
 // increments `counter` 1 million times
 void foo() {
@@ -14,19 +15,13 @@ void foo() {
 }
 
 int main() {
-  // call foo twice
-  counter = 0;
-  foo();
-  foo();
-  std::cout << "Expected: " << counter << std::endl;
-
   // create two threads, which each calls foo once
   counter = 0;
   std::thread t1(foo);
   std::thread t2(foo);
   t1.join();
   t2.join();
-  std::cout << "Result: " << counter << std::endl;
+  std::cout << counter << std::endl;
 
   return 0;
 }
