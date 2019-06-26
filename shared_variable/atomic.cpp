@@ -10,6 +10,9 @@ std::atomic<int> counter;
 // increments `counter` 10 million times
 void foo() {
   for (int i = 0; i < 1E7; ++i) {
+    // implemented using read-modify-write functions in clang
+    // https://llvm.org/docs/Atomics.html#id17
+    // https://gcc.gnu.org/wiki/Atomic/GCCMM/LIbrary
     counter++;
   }
 }

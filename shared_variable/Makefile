@@ -1,4 +1,4 @@
-CXX := g++ -Wall
+CXX := clang++ -Wall
 OBJS = sequantial unsynchronized synchronized atomic
 
 all: ${OBJS}

@@ -1,4 +1,4 @@
-CXX := g++ -Wall
+CXX := clang++ -Wall
 OBJS = shared_var
 
 all: ${OBJS}
