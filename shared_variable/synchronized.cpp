@@ -7,10 +7,10 @@
 
 int counter;
 
-// increments `counter` 1 million times
+// increments `counter` 10 million times
 void foo() {
   static std::mutex mtx;
-  for (int i = 0; i < 1E6; ++i) {
+  for (int i = 0; i < 1E7; ++i) {
     mtx.lock();
     counter++;
     mtx.unlock();
@@ -25,6 +25,5 @@ int main() {
   t1.join();
   t2.join();
   std::cout << counter << std::endl;
-
   return 0;
 }

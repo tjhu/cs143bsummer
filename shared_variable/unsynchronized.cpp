@@ -6,9 +6,9 @@
 
 int counter;
 
-// increments `counter` 1 million times
+// increments `counter` 10 million times
 void foo() {
-  for (int i = 0; i < 1E6; ++i) {
+  for (int i = 0; i < 1E7; ++i) {
     counter++;
   }
 }
@@ -21,6 +21,5 @@ int main() {
   t1.join();
   t2.join();
   std::cout << counter << std::endl;
-
   return 0;
 }
