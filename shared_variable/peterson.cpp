@@ -1,6 +1,9 @@
 // Demo a race condition where two threads trying to modify a shared value
 // synchronized with Peterson's method.
 // Implemented the same way as the zybooks does.
+// WARNING: these two threads must not run at the same time.
+// To mitigate this, you can force all threads to run on the same core.
+// For example, use `taskset -c 1 ./peterson ` to run the program instead.
 
 #include <atomic>
 #include <iostream>
@@ -11,7 +14,7 @@ int counter, will_wait, c1, c2;
 // called by thread t1
 // increments `counter` 10 million times
 void foo() {
-  for (int i = 0; i < 1E7; ++i) {
+  for (int i = 0; i < 1E6; ++i) {
     c1 = 1;
     will_wait = 1;
     while (c2 && (will_wait==1)) {
@@ -27,7 +30,7 @@ void foo() {
 }
 
 void bar() {
-  for (int i = 0; i < 1E7; ++i) {
+  for (int i = 0; i < 1E6; ++i) {
     c2 = 1;
     will_wait = 2;
     while (c1 && (will_wait == 2)) {

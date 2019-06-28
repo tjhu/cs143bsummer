@@ -10,7 +10,7 @@ int counter;
 // increments `counter` 10 million times
 void foo() {
   static std::mutex mtx;
-  for (int i = 0; i < 1E7; ++i) {
+  for (int i = 0; i < 1E6; ++i) {
     // this thread yields if the lock is acquired already
     // https://github.com/llvm-mirror/libcxx/blob/de635b64f8c4e41da218ff234c8d7d5877f2f1c9/include/mutex#L384
     mtx.lock();
