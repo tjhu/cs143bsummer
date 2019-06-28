@@ -1,10 +1,11 @@
-CXX := clang++ -Wall
-OBJS = sequantial unsynchronized synchronized atomic
+CXX := g++ 
+CPPFLAGS := -Wall
+OBJS := sequantial unsynchronized synchronized peterson
 
 all: ${OBJS}
 
 %: %.cpp
-	${CXX} -o $@ $< -lpthread
+	${CXX} ${CPPFLAGS} -o $@ $< -lpthread
 
 clean:
 	@rm *.o ${OBJS}

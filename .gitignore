@@ -2,7 +2,7 @@
 **/sequantial 
 **/unsynchronized 
 **/synchronized 
-**/atomic
+**/peterson
 **/*.o
 
 # user settings
