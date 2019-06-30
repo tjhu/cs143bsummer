@@ -4,6 +4,7 @@
 **/synchronized 
 **/peterson
 **/*.o
+**/*.dump
 
 # user settings
 .vscode

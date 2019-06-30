@@ -6,6 +6,7 @@ all: ${OBJS}
 
 %: %.cpp
 	${CXX} ${CPPFLAGS} -o $@ $< -lpthread
+	objdump -S --disassemble $@ > $@.dump
 
 clean:
-	@rm *.o ${OBJS}
+	@rm *.dump ${OBJS}

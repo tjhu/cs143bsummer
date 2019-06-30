@@ -1,9 +1,6 @@
 // Demo a race condition where two threads trying to modify a shared value
 // synchronized with Peterson's method.
 // Implemented the same way as the zybooks does.
-// WARNING: these two threads must not run at the same time.
-// To mitigate this, you can force all threads to run on the same core.
-// For example, use `taskset -c 1 ./peterson ` to run the program instead.
 
 #include <atomic>
 #include <iostream>
@@ -17,10 +14,14 @@ void foo() {
   for (int i = 0; i < 1E6; ++i) {
     c1 = 1;
     will_wait = 1;
-    while (c2 && (will_wait==1)) {
+    // ask GCC and the CPU to not do out-of-order execution
+    // https://github.com/mit-pdos/xv6-public/blob/1d19081efbb9517d07c7e6c1a8393c6343ba7817/spinlock.c#L38
+    __sync_synchronize();
+    while (c2 && (will_wait == 1)) {
       // spin till acquire the lock
     }
-    
+    __sync_synchronize();
+
     // critical section
     counter++;
 
@@ -33,10 +34,12 @@ void bar() {
   for (int i = 0; i < 1E6; ++i) {
     c2 = 1;
     will_wait = 2;
+    __sync_synchronize();
     while (c1 && (will_wait == 2)) {
       // spin till acquire the lock
     }
-    
+    __sync_synchronize();
+
     // critical section
     counter++;
 
