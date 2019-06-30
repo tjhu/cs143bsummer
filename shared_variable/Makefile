@@ -1,6 +1,6 @@
 CXX := g++ 
 CPPFLAGS := -Wall
-OBJS := sequantial unsynchronized synchronized peterson
+OBJS := sequantial unsynchronized mutex peterson
 
 all: ${OBJS}
 
