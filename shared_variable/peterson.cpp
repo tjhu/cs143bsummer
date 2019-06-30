@@ -15,6 +15,7 @@ void foo() {
     c1 = 1;
     will_wait = 1;
     // ask GCC and the CPU to not do out-of-order execution
+    // this will insert mfence instruction to the assembly on x86
     // https://github.com/mit-pdos/xv6-public/blob/1d19081efbb9517d07c7e6c1a8393c6343ba7817/spinlock.c#L38
     __sync_synchronize();
     while (c2 && (will_wait == 1)) {
