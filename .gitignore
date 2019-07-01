@@ -1,7 +1,7 @@
 # out files
 **/sequantial 
 **/unsynchronized 
-**/synchronized 
+**/mutex 
 **/peterson
 **/*.o
 **/*.dump
