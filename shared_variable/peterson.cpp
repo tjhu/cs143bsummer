@@ -11,7 +11,7 @@ int counter, will_wait, c1, c2;
 // called by thread t1
 // increments `counter` 10 million times
 void foo() {
-  for (int i = 0; i < 1E6; ++i) {
+  for (int i = 0; i < 1E7; ++i) {
     c1 = 1;
     will_wait = 1;
     // ask GCC and the CPU to not do out-of-order execution
@@ -32,7 +32,7 @@ void foo() {
 }
 
 void bar() {
-  for (int i = 0; i < 1E6; ++i) {
+  for (int i = 0; i < 1E7; ++i) {
     c2 = 1;
     will_wait = 2;
     __sync_synchronize();
