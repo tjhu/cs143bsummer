@@ -1,10 +1,7 @@
 # out files
-**/sequantial 
-**/unsynchronized 
-**/mutex 
-**/peterson
-**/*.o
-**/*.dump
+bounded_buffer/**
+shared_variable/**
+!**/*.cpp
 
 # user settings
 .vscode
