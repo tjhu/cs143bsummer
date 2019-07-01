@@ -2,6 +2,7 @@
 bounded_buffer/**
 shared_variable/**
 !**/*.cpp
+!**/Makefile
 
 # user settings
 .vscode
