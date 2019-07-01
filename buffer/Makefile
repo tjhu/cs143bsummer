@@ -1,6 +1,6 @@
 CXX := g++ 
 CPPFLAGS := -Wall
-OBJS := single_buffer
+OBJS := single_buffer buffer_swapping
 
 all: ${OBJS}
 

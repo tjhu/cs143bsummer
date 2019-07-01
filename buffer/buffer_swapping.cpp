@@ -1,5 +1,6 @@
 // Producer produces 1 million numbers and put them into the buffer one after
 // another. Consumer consumes those numbers and output their sum.
+#include <cassert>
 #include <condition_variable>
 #include <cstdint>
 #include <functional>
@@ -19,8 +20,9 @@ public:
     if (is_full()) {
       cv.wait(lck, std::bind(&Buffer::is_not_full, this));
     } 
-    data_ = data;
-    is_full_ = true;
+    size_++;
+    assert(size_ <= MAX_SIZE);
+    data_[(current_ + size_) % MAX_SIZE] = data;
     cv.notify_one();
   }
 
@@ -30,22 +32,28 @@ public:
     if (!is_not_empty()) {
       cv.wait(lck, std::bind(&Buffer::is_not_empty, this));
     }
-    is_full_ = false;
+    size_--;
+    assert(size_ >= 0);
+    current_ = (current_ + 1) % MAX_SIZE;
     cv.notify_one();
-    return data_;
+    return data_[current_];
   }
 
   bool is_not_full() { return !is_full(); }
 
-  bool is_not_empty() { return is_full(); }
+  bool is_not_empty() { return !is_empty(); }
 
-  bool is_full() { return is_full_; }
+  bool is_empty() { return size_ == 0; }
+
+  bool is_full() { return size_ == MAX_SIZE; }
 
 private:
   std::mutex mtx_;
   std::condition_variable cv;
-  bool is_full_ = false;
-  int data_;
+  int size_ = 0;
+  const static int MAX_SIZE = 2;
+  int current_ = 0; // the current position of the consumer
+  int data_[MAX_SIZE];
 };
 
 void producer_fn(Buffer *buffer) {
