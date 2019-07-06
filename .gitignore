@@ -1,6 +1,7 @@
 # out files
 buffer/**
 shared_variable/**
+!**/*.hpp
 !**/*.cpp
 !**/Makefile
 
