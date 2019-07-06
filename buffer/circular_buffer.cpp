@@ -17,7 +17,7 @@
 #include <vector>
 
 // The number of data we produce/consume
-const int64_t num_data = 1E3;
+const int64_t num_data = 4;
 // Size of one time unit
 const auto time_unit_size = std::chrono::milliseconds(1);
 
@@ -34,7 +34,7 @@ void producer_fn(Buffer *buffer, int k1, int k2) {
       std::this_thread::sleep_for(time_unit_size);
     }
     if (should_produce(t, k1, k2)) {
-      buffer->put(i);
+      buffer->put(i + 1);
       i++;
     }
     t++;
