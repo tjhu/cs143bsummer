@@ -44,6 +44,20 @@ public:
   int k2_;
 };
 
+class Consumer {
+public:
+  Consumer(Buffer *buffer, int k3) : buffer_(buffer), k3_(k3) {}
+
+  int consume() {
+    std::this_thread::sleep_for(time_unit_size * k3_);
+    return buffer_->get();
+  }
+
+private:
+  Buffer *buffer_;
+  int k3_;
+};
+
 void producer_fn(Buffer *buffer, int k1, int k2) {
   Producer p(buffer, k1, k2);
   for (int i = 0; i < num_data; i++) {
@@ -51,20 +65,10 @@ void producer_fn(Buffer *buffer, int k1, int k2) {
   }
 }
 
-bool should_consume(int t, int k3) { return (t % k3) == 0; }
-
 void consumer_fn(Buffer *buffer, uint64_t *result, int k3) {
-  int t = 0;
-  int i = 0;
-  while (i < num_data) {
-    if (i != 0) {
-      std::this_thread::sleep_for(time_unit_size);
-    }
-    if (should_consume(t, k3)) {
-      *result += buffer->get();
-      i++;
-    }
-    t++;
+  Consumer c(buffer, k3);
+  for (int i = 0; i < num_data; i++) {
+    *result += c.consume();
   }
 }
 
