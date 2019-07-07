@@ -17,33 +17,41 @@
 #include <vector>
 
 // The number of data we produce/consume
-const int64_t num_data = 4;
+const int64_t num_data = 1E3;
 // Size of one time unit
 const auto time_unit_size = std::chrono::milliseconds(1);
 
-bool should_produce(int i, int k1, int k2) {
-  const int interval_size = k1 + k2;
-  return (i % interval_size) < k1;
-}
+class Producer {
+
+public:
+  Producer(Buffer *buffer, int k1, int k2)
+      : buffer_(buffer), i_(0), k1_(k1), k2_(k2) {}
+
+  void produce(int data) {
+    // Produce
+    std::this_thread::sleep_for(time_unit_size);
+    buffer_->put(data);
+
+    // After producing every k1 items, we take a nap that's k2 long
+    if (++i_ % k2_ == 0) {
+      std::this_thread::sleep_for(time_unit_size * k2_);
+    }
+  }
+
+  Buffer *buffer_;
+  int i_;
+  int k1_;
+  int k2_;
+};
 
 void producer_fn(Buffer *buffer, int k1, int k2) {
-  int t = 0;
-  int i = 0;
-  while (i < num_data) {
-    if (i != 0) {
-      std::this_thread::sleep_for(time_unit_size);
-    }
-    if (should_produce(t, k1, k2)) {
-      buffer->put(i + 1);
-      i++;
-    }
-    t++;
+  Producer p(buffer, k1, k2);
+  for (int i = 0; i < num_data; i++) {
+    p.produce(i + 1);
   }
 }
 
-bool should_consume(int t, int k3) {
-  return (t % k3) == 0;
-}
+bool should_consume(int t, int k3) { return (t % k3) == 0; }
 
 void consumer_fn(Buffer *buffer, uint64_t *result, int k3) {
   int t = 0;
