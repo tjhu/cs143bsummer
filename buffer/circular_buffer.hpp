@@ -25,8 +25,9 @@ public:
     cv.notify_one();
   }
 
-  // Wail till the buffer is not empty then get the first data into the buffer
-  data_t get() {
+  // Wail till the buffer is not empty then return the first data in the buffer
+  // It also optionally return the size of the current buffer
+  data_t get(int *size = nullptr) {
     std::unique_lock<std::mutex> lck(mtx_);
     if (!is_not_empty()) {
       cv.wait(lck, std::bind(&Buffer::is_not_empty, this));

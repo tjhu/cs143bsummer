@@ -16,6 +16,10 @@
 #include <thread>
 #include <vector>
 
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
+
 // The number of data we produce/consume
 const int64_t num_data = 1E3;
 // Size of one time unit
@@ -77,15 +81,20 @@ void consumer_fn(Buffer *buffer, uint64_t *result, int k3) {
 // arg3: k2, Then P waits for k2 time units until the next burst of k1 item.
 // arg4: k3, C removes 1 item every k3 time units.
 int main(int argc, char **argv) {
-  assert(argc == 5);
+  // Parse program arguments
   int n, k1, k2, k3;
-  try {
-    n = std::stoi(argv[1]);
-    k1 = std::stoi(argv[2]);
-    k2 = std::stoi(argv[3]);
-    k3 = std::stoi(argv[4]);
-  } catch (std::invalid_argument &e) {
-    std::cout << "Please provide 4 integers for the arguments" << std::endl;
+  po::options_description desc("Program options");
+  desc.add_options()("help", "produce help message")(
+      "n", po::value<int>(&n)->required(), "capacity of the buffer")(
+      "k1", po::value<int>(&k1)->required(),
+      "P burst length")("k2", po::value<int>(&k2)->required(), "P rest length")(
+      "k3", po::value<int>(&k3)->required(), "time to comsum 1 entry for C");
+  po::variables_map vm;
+  assert(vm.count("n"));
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 0;
   }
 
   Buffer buffer(n);
