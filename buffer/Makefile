@@ -1,6 +1,6 @@
 CXX := g++ -std=c++17
 CPPFLAGS := -Wall
-OBJS := single_buffer buffer_swapping circular_buffer
+OBJS := single_buffer buffer_swapping circular_buffer_main
 
 all: ${OBJS}
 
