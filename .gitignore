@@ -4,6 +4,7 @@ shared_variable/**
 !**/*.hpp
 !**/*.cpp
 !**/Makefile
+!**/*.sh
 
 # user settings
 .vscode
