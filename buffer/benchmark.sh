@@ -4,5 +4,5 @@ function run() {
 
 for i in {1..10..1}
   do 
-     printf "n=$i: %s\n" $(run $i 10 10 2 2>&1)
+     printf "n=$i: %s\n" $(run $i 10 10 2 5 5 5 2>&1)
  done
