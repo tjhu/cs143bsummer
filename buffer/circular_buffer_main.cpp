@@ -14,8 +14,9 @@
 #include <thread>
 #include <vector>
 
-// The number of data we produce/consume
+// The even number of data we produce/consume
 const int64_t num_data = 1E3;
+static_assert(num_data % 2 == 0);
 // Size of one time unit
 const auto time_unit_size = std::chrono::milliseconds(1);
 
@@ -23,13 +24,12 @@ class Producer {
 
 public:
   Producer(Buffer *buffer, int k1, int k2, int d1 = -1, int d2 = -1)
-      : buffer_(buffer), i_(0), k1_(k1), k2_(k2), use_rand_(d1 >= 0), rand_engine_(std::random_device()()),
-        k1_dist_(k1, d1), k2_dist_(k2, d2) {
+      : buffer_(buffer), i_(0), k1_(k1), k2_(k2), use_rand_(d1 >= 0),
+        rand_engine_(std::random_device()()), k1_dist_(k1, d1),
+        k2_dist_(k2, d2) {
     assert((d1 < 0) == (d2 < 0));
-    // std::cout << d1 << ' ' << d2 << ' ' << use_rand_ << std::endl;
     if (use_rand_) {
       next_burst_length_ = k1_dist_(rand_engine_);
-      // std::cout << "using rand, burst len: " << next_burst_length_ << ' ' << std::binomial_distribution<int>(4, 0.5)(rand_engine_) << std::endl;
     } else {
       next_burst_length_ = k1_;
     }
@@ -44,8 +44,8 @@ public:
     if (++i_ % next_burst_length_ == 0) {
       int sleep_length = k2_;
       if (use_rand_) {
-        next_burst_length_ = k1_dist_(rand_engine_);
-        sleep_length = k2_dist_(rand_engine_);
+        next_burst_length_ = std::max<int>(1, k1_dist_(rand_engine_));
+        sleep_length = std::max<int>(1, k2_dist_(rand_engine_));
       }
       std::this_thread::sleep_for(time_unit_size * sleep_length);
     }
@@ -60,9 +60,10 @@ private:
   // Member variables for random number generation
   const bool use_rand_;
   int next_burst_length_;
-  std::default_random_engine rand_engine_;
-  std::binomial_distribution<int> k1_dist_;
-  std::binomial_distribution<int> k2_dist_;
+  std::mt19937 rand_engine_;
+  // TODO: need to confirmation that normal is okay
+  std::normal_distribution<> k1_dist_;
+  std::normal_distribution<> k2_dist_;
 };
 
 class Consumer {
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
   std::thread consumer_thread(std::bind(consumer_fn, &c, &result));
   producer_thread.join();
   consumer_thread.join();
-  std::cout << "expected: " << (num_data + 1) * (num_data / 2) << std::endl;
-  std::cout << "result: " << result << std::endl;
+  const auto expected = (num_data + 1) * (num_data / 2);
+  assert(expected == result);
   return 0;
 }
