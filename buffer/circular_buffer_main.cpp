@@ -93,26 +93,31 @@ private:
 
 void producer_fn(Producer *p) {
   uint64_t size_sum = 0;
+  int max_size = 0;
   for (int i = 0; i < num_data; i++) {
-    size_sum += p->produce(i + 1);
+    int tmp = p->produce(i + 1);
+    size_sum += tmp;
+    max_size = std::max(tmp, max_size);
   }
-  std::cout << "producer avg size: " << (float) size_sum / num_data << std::endl;
+  std::cout << "producer: ( avg : " << (float) size_sum / num_data << " ), ( max: " << max_size  << " )" << std::endl;
   producer_finished = true;
 }
 
 void consumer_fn(Consumer *c, uint64_t *result) {
   uint64_t size_sum = 0;
+    int max_size = 0;
   for (int i = 0; i < num_data; i++) {
     int tmp;
     *result += c->consume(&tmp);
     size_sum += tmp;
+    max_size = std::max(tmp, max_size);
   }
 
   // Spin until the producer finishes
   while (!producer_finished.load()) {
     ; //spin
   }
-  std::cout << "consumer avg size: " << (float) size_sum / num_data << std::endl;
+  std::cout << "consumer: ( avg : " << (float) size_sum / num_data << " ), ( max: " << max_size  << " )" << std::endl;
 }
 
 // arg1: N, size of the circular buffer.
