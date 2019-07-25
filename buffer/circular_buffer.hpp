@@ -38,6 +38,8 @@ public:
     return data_[current_];
   }
 
+  int size() { return size_; }
+
   bool is_not_full() { return !is_full(); }
 
   bool is_not_empty() { return !is_empty(); }

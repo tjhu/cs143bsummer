@@ -1,8 +1,10 @@
 // Producer produces `num_data` amount of numbers and put them into the buffer
 // one after another. Consumer consumes those numbers and output their sum.
+// I know global variables is everywhere, but for simplicity...
 
 #include "circular_buffer.hpp"
 
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <condition_variable>
@@ -19,6 +21,8 @@ const int64_t num_data = 1E3;
 static_assert(num_data % 2 == 0);
 // Size of one time unit
 const auto time_unit_size = std::chrono::milliseconds(1);
+// Whether the producer finished or not
+std::atomic<bool> producer_finished = false;
 
 class Producer {
 
@@ -35,7 +39,9 @@ public:
     }
   }
 
-  void produce(int data) {
+  // Produce `data` and return the current(on function entry) size of the buffer
+  int produce(int data) {
+    int size = buffer_->size();
     // Produce
     std::this_thread::sleep_for(time_unit_size);
     buffer_->put(data);
@@ -49,6 +55,7 @@ public:
       }
       std::this_thread::sleep_for(time_unit_size * sleep_length);
     }
+    return size;
   }
 
 private:
@@ -70,7 +77,11 @@ class Consumer {
 public:
   Consumer(Buffer *buffer, int k3) : buffer_(buffer), k3_(k3) {}
 
-  int consume() {
+  // Return the next item on the buffer and set `size` to the size of current buffer
+  int consume(int* size = nullptr) {
+    if (size != nullptr) {
+      *size = buffer_->size();
+    }
     std::this_thread::sleep_for(time_unit_size * k3_);
     return buffer_->get();
   }
@@ -81,18 +92,30 @@ private:
 };
 
 void producer_fn(Producer *p) {
+  uint64_t size_sum = 0;
   for (int i = 0; i < num_data; i++) {
-    p->produce(i + 1);
+    size_sum += p->produce(i + 1);
   }
+  std::cout << "producer avg size: " << (float) size_sum / num_data << std::endl;
+  producer_finished = true;
 }
 
 void consumer_fn(Consumer *c, uint64_t *result) {
+  uint64_t size_sum = 0;
   for (int i = 0; i < num_data; i++) {
-    *result += c->consume();
+    int tmp;
+    *result += c->consume(&tmp);
+    size_sum += tmp;
   }
+
+  // Spin until the producer finishes
+  while (!producer_finished.load()) {
+    ; //spin
+  }
+  std::cout << "consumer avg size: " << (float) size_sum / num_data << std::endl;
 }
 
-// arg1: n, size of the circular buffer.
+// arg1: N, size of the circular buffer.
 // arg2: k1, P produces a burst of k1 items, 1 per time unit.
 // arg3: k2, Then P waits for k2 time units until the next burst of k1 item.
 // arg4: k3, C removes 1 item every k3 time units.
@@ -101,9 +124,9 @@ void consumer_fn(Consumer *c, uint64_t *result) {
 // d1 and d2 must be both set or both not set.
 int main(int argc, char **argv) {
   assert(argc == 5 || argc == 7);
-  int n, k1, k2, k3, d1 = -1, d2 = -1;
+  int N, k1, k2, k3, d1 = -1, d2 = -1;
   try {
-    n = std::stoi(argv[1]);
+    N = std::stoi(argv[1]);
     k1 = std::stoi(argv[2]);
     k2 = std::stoi(argv[3]);
     k3 = std::stoi(argv[4]);
@@ -115,7 +138,7 @@ int main(int argc, char **argv) {
     std::cout << "Please provide 4-6 integers for the arguments" << std::endl;
   }
 
-  Buffer buffer(n);
+  Buffer buffer(N);
   uint64_t result = 0;
   Producer p(&buffer, k1, k2, d1, d2);
   std::thread producer_thread(std::bind(producer_fn, &p));

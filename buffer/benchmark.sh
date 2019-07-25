@@ -1,8 +1,10 @@
 function run() {
-    /usr/bin/time -f %e ./circular_buffer_main $1 $2 $3 $4 > /dev/null
+    /usr/bin/time -f "time: %e\n" ./circular_buffer_main $1 $2 $3 $4 $5 $6
 }
 
-for i in {1..10..1}
+for i in {1..20..1}
   do 
-     printf "n=$i: %s\n" $(run $i 10 10 2 5 5 5 2>&1)
+    echo "iteration $i"
+    run $i 10 10 2 >&1
+    echo
  done
