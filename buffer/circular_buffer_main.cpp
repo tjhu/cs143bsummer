@@ -77,8 +77,9 @@ class Consumer {
 public:
   Consumer(Buffer *buffer, int k3) : buffer_(buffer), k3_(k3) {}
 
-  // Return the next item on the buffer and set `size` to the size of current buffer
-  int consume(int* size = nullptr) {
+  // Return the next item on the buffer and set `size` to the size of current
+  // buffer
+  int consume(int *size = nullptr) {
     if (size != nullptr) {
       *size = buffer_->size();
     }
@@ -99,13 +100,14 @@ void producer_fn(Producer *p) {
     size_sum += tmp;
     max_size = std::max(tmp, max_size);
   }
-  std::cout << "producer: ( avg : " << (float) size_sum / num_data << " ), ( max: " << max_size  << " )" << std::endl;
+  std::cout << "producer: ( avg : " << (float)size_sum / num_data
+            << " ), ( max: " << max_size << " )" << std::endl;
   producer_finished = true;
 }
 
 void consumer_fn(Consumer *c, uint64_t *result) {
   uint64_t size_sum = 0;
-    int max_size = 0;
+  int max_size = 0;
   for (int i = 0; i < num_data; i++) {
     int tmp;
     *result += c->consume(&tmp);
@@ -115,9 +117,10 @@ void consumer_fn(Consumer *c, uint64_t *result) {
 
   // Spin until the producer finishes
   while (!producer_finished.load()) {
-    ; //spin
+    ; // spin
   }
-  std::cout << "consumer: ( avg : " << (float) size_sum / num_data << " ), ( max: " << max_size  << " )" << std::endl;
+  std::cout << "consumer: ( avg : " << (float)size_sum / num_data
+            << " ), ( max: " << max_size << " )" << std::endl;
 }
 
 // arg1: N, size of the circular buffer.
