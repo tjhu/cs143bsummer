@@ -17,6 +17,7 @@ public:
   void put(data_t data) {
     std::unique_lock<std::mutex> lck(mtx_);
     if (is_full()) {
+      blocked_cnt += 1;
       cv.wait(lck, std::bind(&Buffer::is_not_full, this));
     }
     size_++;
@@ -38,15 +39,17 @@ public:
     return data_[current_];
   }
 
-  int size() { return size_; }
+  int size() const { return size_; }
 
-  bool is_not_full() { return !is_full(); }
+  bool is_not_full() const { return !is_full(); }
 
-  bool is_not_empty() { return !is_empty(); }
+  bool is_not_empty() const { return !is_empty(); }
 
-  bool is_empty() { return size_ == 0; }
+  bool is_empty() const { return size_ == 0; }
 
-  bool is_full() { return size_ == capacity_; }
+  bool is_full() const { return size_ == capacity_; }
+
+  int get_blocked_cnt() const { return blocked_cnt; }
 
 private:
   Buffer();
@@ -57,4 +60,8 @@ private:
   int size_ = 0;
   int current_ = 0; // the current position of the consumer
   std::vector<data_t> data_;
+
+  // Counters
+  // Number of times `put()` is being blocked
+  int blocked_cnt = 0;
 };

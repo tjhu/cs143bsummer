@@ -1,4 +1,5 @@
 #!/bin/bash
+# See the main function in circular_buffer_main.cpp for usage
 trap 'exit 130' INT
 
 function run() {
@@ -8,5 +9,5 @@ function run() {
 for i in {1..10..1}
   do 
     echo "======iteration $i======="
-    run $i 10 10 2          2>&1
+    run $i 1 1 2 10 10          2>&1
  done

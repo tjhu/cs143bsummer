@@ -58,6 +58,8 @@ public:
     return size;
   }
 
+  int get_blocked_cnt() const { return buffer_->get_blocked_cnt(); }
+
 private:
   Buffer *buffer_;
   int i_;
@@ -101,7 +103,9 @@ void producer_fn(Producer *p) {
     max_size = std::max(tmp, max_size);
   }
   std::cout << "producer: ( avg : " << (float)size_sum / num_data
-            << " ), ( max: " << max_size << " )" << std::endl;
+            << " ), ( max: " << max_size
+            << " ), ( blocked_cnt: " << (float)p->get_blocked_cnt() / num_data << " )"
+            << std::endl;
   producer_finished = true;
 }
 
@@ -119,8 +123,8 @@ void consumer_fn(Consumer *c, uint64_t *result) {
   while (!producer_finished.load()) {
     ; // spin
   }
-  std::cout << "consumer: ( avg : " << (float)size_sum / num_data
-            << " ), ( max: " << max_size << " )" << std::endl;
+  // std::cout << "consumer: ( avg : " << (float)size_sum / num_data
+  //           << " ), ( max: " << max_size << " )" << std::endl;
 }
 
 // arg1: N, size of the circular buffer.
