@@ -21,7 +21,7 @@ const int64_t num_data = 1E3;
 static_assert(num_data % 2 == 0);
 // Size of one time unit
 const auto time_unit_size = std::chrono::milliseconds(1);
-// Whether the producer finished or not
+// Whether the producer finished or not. Being used to sync output
 std::atomic<bool> producer_finished = false;
 
 class Producer {
@@ -94,27 +94,36 @@ private:
   int k3_;
 };
 
-void producer_fn(Producer *p) {
+void producer_fn(Producer *p, int N) {
   uint64_t size_sum = 0;
   int max_size = 0;
+  std::vector<int> buff_sizes(N + 1, 0);
   for (int i = 0; i < num_data; i++) {
     int tmp = p->produce(i + 1);
+    buff_sizes[tmp]++;
     size_sum += tmp;
     max_size = std::max(tmp, max_size);
   }
   std::cout << "producer: ( avg : " << (float)size_sum / num_data
             << " ), ( max: " << max_size
-            << " ), ( blocked_cnt: " << (float)p->get_blocked_cnt() / num_data << " )"
-            << std::endl;
+            << " ), ( blocked_cnt: " << (float)p->get_blocked_cnt() / num_data
+            << " )" << std::endl;
+
+  std::cout << "Buffer sizes." << std::endl;
+  for (uint i = 0; i < buff_sizes.size(); i++) {
+    std::cout << i << ": " << buff_sizes[i] << std::endl;
+  }
   producer_finished = true;
 }
 
-void consumer_fn(Consumer *c, uint64_t *result) {
+void consumer_fn(Consumer *c, int N, uint64_t *result) {
   uint64_t size_sum = 0;
   int max_size = 0;
+  std::vector<int> buff_sizes(N + 1, 0);
   for (int i = 0; i < num_data; i++) {
     int tmp;
     *result += c->consume(&tmp);
+    buff_sizes[tmp]++;
     size_sum += tmp;
     max_size = std::max(tmp, max_size);
   }
@@ -125,6 +134,10 @@ void consumer_fn(Consumer *c, uint64_t *result) {
   }
   // std::cout << "consumer: ( avg : " << (float)size_sum / num_data
   //           << " ), ( max: " << max_size << " )" << std::endl;
+  // std::cout << "Buffer sizes." << std::endl;
+  // for (uint i = 0; i < buff_sizes.size(); i++) {
+  //   std::cout << i << ": " << buff_sizes[i] << std::endl;
+  // }
 }
 
 // arg1: N, size of the circular buffer.
@@ -153,9 +166,9 @@ int main(int argc, char **argv) {
   Buffer buffer(N);
   uint64_t result = 0;
   Producer p(&buffer, k1, k2, d1, d2);
-  std::thread producer_thread(std::bind(producer_fn, &p));
+  std::thread producer_thread(std::bind(producer_fn, &p, N));
   Consumer c(&buffer, k3);
-  std::thread consumer_thread(std::bind(consumer_fn, &c, &result));
+  std::thread consumer_thread(std::bind(consumer_fn, &c, N, &result));
   producer_thread.join();
   consumer_thread.join();
   const auto expected = (num_data + 1) * (num_data / 2);

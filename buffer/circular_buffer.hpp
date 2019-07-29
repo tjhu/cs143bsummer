@@ -39,7 +39,7 @@ public:
     return data_[current_];
   }
 
-  int size() const { return size_; }
+  inline int size() const { return size_; }
 
   bool is_not_full() const { return !is_full(); }
 
@@ -57,8 +57,8 @@ private:
   std::mutex mtx_;
   std::condition_variable cv;
   const int capacity_;
-  int size_ = 0;
-  int current_ = 0; // the current position of the consumer
+  volatile int size_ = 0;
+  volatile int current_ = 0; // the current position of the consumer
   std::vector<data_t> data_;
 
   // Counters

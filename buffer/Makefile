@@ -1,4 +1,4 @@
-CXX := g++ -std=c++17
+CXX := g++ -std=c++17 -g
 CPPFLAGS := -Wall
 OBJS := single_buffer buffer_swapping circular_buffer_main
 
